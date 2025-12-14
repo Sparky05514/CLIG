@@ -1,6 +1,6 @@
 # CLIg - Command Line Games
 
-A collection of high-quality terminal games written in C using ncurses.
+A collection of simple terminal games written in C using ncurses.
 
 ## Projects
 
