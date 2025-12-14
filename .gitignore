@@ -1,0 +1,5 @@
+# Build Artifacts
+*.o
+tetris/tetris
+snake/snake
+.DS_Store
