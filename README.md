@@ -5,8 +5,8 @@ A collection of simple terminal games written in C using ncurses.
 ## Projects
 
 ### 1. Tetris (`/tetris`)
-A competitive-grade Tetris clone featuring:
--   **Pro Mechanics**: 7-Bag Randomizer, SRS Wall Kicks, Move Reset.
+A Tetris clone featuring:
+-   **Proper Mechanics**: 7-Bag Randomizer, SRS Wall Kicks, Move Reset.
 -   **Controls**: WASD/Arrow Keys, Space (Hard Drop), S (Fast Soft Drop), C (Hold).
 -   **Physics**: Tuned DAS (90ms) and ARR (45ms).
 
