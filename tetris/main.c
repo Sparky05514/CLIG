@@ -365,25 +365,47 @@ void hard_drop() {
 
 void draw_preview(int start_y, int start_x, int type, const char* label) {
     mvprintw(start_y, start_x, "%s", label);
-    if (type == -1) return;
     
-    attron(COLOR_PAIR(SHAPES[type].color));
-    int size = SHAPES[type].grid_size;
-    for(int i=0; i<size; i++) {
-        for(int j=0; j<size; j++) {
-            if (get_block(type, 0, j, i)) {
+    /* Always clear/draw 4x4 area to ensure previous piece is erased */
+    for(int i=0; i<4; i++) {
+        for(int j=0; j<4; j++) {
+            /* If type is -1 (empty), just clear the space */
+            int is_block = 0;
+            if (type != -1) {
+                attron(COLOR_PAIR(SHAPES[type].color));
+                is_block = get_block(type, 0, j, i);
+            }
+            
+            if (is_block) {
+                mvprintw(start_y + 2 + i, start_x + (j * 2), "  ");
+            } else {
+                /* Clear the space if it was previously occupied or is empty */
+                /* Use default color pair or turn off attributes */
+                attroff(COLOR_PAIR(1)|COLOR_PAIR(2)|COLOR_PAIR(3)|COLOR_PAIR(4)|COLOR_PAIR(5)|COLOR_PAIR(6)|COLOR_PAIR(7)); 
+                /* Accessing global pairs blindly is risky if not careful, but safely we can just use stdscr default */
+                /* Safer: turn off the specific color if we set it, but we can just use 0 */
+                attrset(A_NORMAL);
                 mvprintw(start_y + 2 + i, start_x + (j * 2), "  ");
             }
+            
+            if (type != -1) attroff(COLOR_PAIR(SHAPES[type].color));
         }
     }
-    attroff(COLOR_PAIR(SHAPES[type].color));
 }
 
 void draw_board() {
-    clear();
-    
+    /* Remove global clear() to prevent flickering. 
+       Only clear if terminal size changes. */
+    static int prev_term_w = -1, prev_term_h = -1;
     int term_h, term_w;
     getmaxyx(stdscr, term_h, term_w);
+    
+    if (term_w != prev_term_w || term_h != prev_term_h) {
+        prev_term_w = term_w;
+        prev_term_h = term_h;
+        clear();
+    }
+    
     int start_y = (term_h - BOARD_HEIGHT) / 2;
     int start_x = (term_w - (BOARD_WIDTH * 2)) / 2;
 
@@ -408,6 +430,8 @@ void draw_board() {
                 mvprintw(start_y + y, start_x + (x * 2), "  ");
                 attroff(COLOR_PAIR(board[y][x]));
             } else {
+                /* Explicitly draw background to erase previous active pieces */
+                attrset(A_NORMAL);
                 mvprintw(start_y + y, start_x + (x * 2), " .");
             }
         }
@@ -449,7 +473,8 @@ void draw_board() {
     }
     attroff(COLOR_PAIR(current_piece.color));
 
-    mvprintw(0, 0, "Score: %d", score);
+    attrset(A_NORMAL);
+    mvprintw(0, 0, "Score: %d          ", score); /* Padding to clear long scores */
     refresh();
 }
 
