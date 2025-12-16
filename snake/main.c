@@ -37,50 +37,73 @@ int queue_tail = 0;
 int queue_count = 0;
 
 /* Function Prototypes */
-void setup();
+void init_ncurses();
+void reset_game();
 void queue_move(int dx, int dy);
 void process_queue();
 void logic();
 void draw();
 void cleanup();
+int show_game_over();
 long get_current_time_us();
 
 int main() {
-    setup();
+    init_ncurses();
 
-    long last_update_time = get_current_time_us();
+    while (1) {
+        reset_game();
+        long last_update_time = get_current_time_us();
 
-    while (!game_over) {
-        long current_time = get_current_time_us();
+        while (!game_over) {
+            long current_time = get_current_time_us();
 
-        /* Input Polling Loop */
-        int ch;
-        while ((ch = getch()) != ERR) {
-             switch (ch) {
-                case KEY_LEFT:  queue_move(-1, 0); break;
-                case KEY_RIGHT: queue_move(1, 0); break;
-                case KEY_UP:    queue_move(0, -1); break;
-                case KEY_DOWN:  queue_move(0, 1); break;
-                case 'q':
-                case 'Q':
-                    game_over = 1;
-                    break;
+            /* Input Polling Loop */
+            int ch;
+            while ((ch = getch()) != ERR) {
+                 switch (ch) {
+                    case KEY_LEFT:
+                    case 'a':
+                    case 'A':
+                        queue_move(-1, 0); 
+                        break;
+                    case KEY_RIGHT: 
+                    case 'd':
+                    case 'D':
+                        queue_move(1, 0); 
+                        break;
+                    case KEY_UP:    
+                    case 'w':
+                    case 'W':
+                        queue_move(0, -1); 
+                        break;
+                    case KEY_DOWN:  
+                    case 's':
+                    case 'S':
+                        queue_move(0, 1); 
+                        break;
+                    case 'q':
+                    case 'Q':
+                        game_over = 1;
+                        break;
+                }
             }
+
+            if (current_time - last_update_time >= GAME_DELAY) {
+                process_queue();
+                logic();
+                draw();
+                last_update_time = current_time;
+            }
+
+            usleep(1000); 
         }
 
-        if (current_time - last_update_time >= GAME_DELAY) {
-            process_queue();
-            logic();
-            draw();
-            last_update_time = current_time;
+        if (!show_game_over()) {
+            break;
         }
-
-        usleep(1000); 
     }
 
     cleanup();
-    printf("Game Over! Score: %d\n", score);
-
     return 0;
 }
 
@@ -90,7 +113,7 @@ long get_current_time_us() {
     return (tv.tv_sec * 1000000) + tv.tv_usec;
 }
 
-void setup() {
+void init_ncurses() {
     initscr();
     noecho();
     curs_set(FALSE);
@@ -110,6 +133,18 @@ void setup() {
     
     logic_width = term_x / 2;
     logic_height = term_y;
+}
+
+void reset_game() {
+    if (snake.body) {
+        free(snake.body);
+    }
+
+    score = 0;
+    game_over = 0;
+    queue_head = 0;
+    queue_tail = 0;
+    queue_count = 0;
 
     /* Initialize Snake */
     snake.length = 5;
@@ -123,6 +158,37 @@ void setup() {
     for (int i = 0; i < FOOD_COUNT; i++) {
         food[i].x = rand() % (logic_width - 2) + 1;
         food[i].y = rand() % (logic_height - 2) + 1;
+    }
+}
+
+int show_game_over() {
+    nodelay(stdscr, FALSE); // Blocking input for menu
+    
+    int h = 10, w = 40;
+    int y = (LINES - h) / 2;
+    int x = (COLS - w) / 2;
+    
+    WINDOW *win = newwin(h, w, y, x);
+    box(win, 0, 0);
+    mvwprintw(win, 2, (w - 11) / 2, "GAME OVER");
+    mvwprintw(win, 4, (w - 16) / 2, "Final Score: %d", score);
+    mvwprintw(win, 6, (w - 24) / 2, "Press 'r' to Restart");
+    mvwprintw(win, 7, (w - 20) / 2, "Press 'q' to Quit");
+    wrefresh(win);
+    
+    int ch;
+    while (1) {
+        ch = getch();
+        if (ch == 'r' || ch == 'R') {
+            nodelay(stdscr, TRUE); // Restore non-blocking
+            delwin(win);
+            return 1;
+        }
+        if (ch == 'q' || ch == 'Q') {
+            nodelay(stdscr, TRUE); // Restore non-blocking
+            delwin(win);
+            return 0;
+        }
     }
 }
 

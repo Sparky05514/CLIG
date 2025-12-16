@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+#include <string.h>
 #include <sys/time.h>
 
 /* Constants */
@@ -120,7 +121,9 @@ int get_kick_index(int old_rot, int new_rot) {
 /* --- LOGIC DEFINITIONS END --- */
 
 /* Prototypes */
-void setup();
+void init_ncurses();
+void reset_game();
+int show_game_over();
 void loop_game();
 void draw_board();
 void spawn_piece(int type);
@@ -136,10 +139,15 @@ long get_time_us();
 int get_block(int type, int rot, int x, int y);
 
 int main() {
-    setup();
-    loop_game();
+    init_ncurses();
+    
+    while (1) {
+        reset_game();
+        loop_game();
+        if (!show_game_over()) break;
+    }
+
     endwin();
-    printf("Game Over! Score: %d\n", score);
     return 0;
 }
 
@@ -149,7 +157,7 @@ long get_time_us() {
     return (tv.tv_sec * 1000000) + tv.tv_usec;
 }
 
-void setup() {
+void init_ncurses() {
     initscr();
     noecho();
     curs_set(FALSE);
@@ -168,11 +176,52 @@ void setup() {
         init_pair(7, COLOR_BLACK, COLOR_RED);
         init_pair(8, COLOR_WHITE, COLOR_BLACK);
     }
+}
+
+void reset_game() {
+    memset(board, 0, sizeof(board));
+    score = 0;
+    game_over = 0;
+    drop_rate = DROP_RATE_INITIAL;
+    hold_piece_type = -1;
+    can_hold = 1;
+    lock_timer = 0;
     
     shuffle_bag();
     next_piece_type = next_from_bag();
     new_piece();
     last_drop_time = get_time_us();
+}
+
+int show_game_over() {
+    nodelay(stdscr, FALSE); // Blocking input
+    
+    int h = 10, w = 40;
+    int y = (LINES - h) / 2;
+    int x = (COLS - w) / 2;
+    
+    WINDOW *win = newwin(h, w, y, x);
+    box(win, 0, 0);
+    mvwprintw(win, 2, (w - 11) / 2, "GAME OVER");
+    mvwprintw(win, 4, (w - 16) / 2, "Final Score: %d", score);
+    mvwprintw(win, 6, (w - 24) / 2, "Press 'r' to Restart");
+    mvwprintw(win, 7, (w - 20) / 2, "Press 'q' to Quit");
+    wrefresh(win);
+    
+    int ch;
+    while (1) {
+        ch = getch();
+        if (ch == 'r' || ch == 'R') {
+            nodelay(stdscr, TRUE);
+            delwin(win);
+            return 1;
+        }
+        if (ch == 'q' || ch == 'Q') {
+            nodelay(stdscr, TRUE);
+            delwin(win);
+            return 0;
+        }
+    }
 }
 
 void spawn_piece(int type) {
@@ -278,12 +327,28 @@ void clear_lines() {
         }
     }
     if (lines_cleared > 0) {
+        /* Award points based on lines cleared */
         switch (lines_cleared) {
             case 1: score += 100; break;
             case 2: score += 300; break;
             case 3: score += 500; break;
             case 4: score += 800; break;
         }
+        
+        /* Check for all-clear (perfect clear) bonus */
+        int board_empty = 1;
+        for (int y = 0; y < BOARD_HEIGHT && board_empty; y++) {
+            for (int x = 0; x < BOARD_WIDTH; x++) {
+                if (board[y][x]) {
+                    board_empty = 0;
+                    break;
+                }
+            }
+        }
+        if (board_empty) {
+            score += 3000; /* All-clear bonus! */
+        }
+        
         if (drop_rate > 100000) drop_rate -= 10000;
     }
 }
@@ -357,7 +422,6 @@ void rotate_piece(int dir) {
 void hard_drop() {
     while (!check_collision(current_piece.x, current_piece.y + 1, current_piece.rotation)) {
         current_piece.y++;
-        score += 2; 
     }
     lock_piece();
     last_drop_time = get_time_us();
