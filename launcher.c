@@ -39,6 +39,7 @@ void find_games() {
             games[game_count].name[MAX_NAME_LEN - 1] = '\0';
             strncpy(games[game_count].path, executable_path, 255);
             games[game_count].path[255] = '\0';
+
             game_count++;
           }
         }
@@ -141,7 +142,10 @@ int main() {
       def_prog_mode(); // Save curses terminal state
       endwin();        // Temporarily leave curses mode
 
-      system(games[choice].path);
+      char cmd[512];
+      snprintf(cmd, sizeof(cmd), "cd %s && ./%s", games[choice].name,
+               games[choice].name);
+      system(cmd);
 
       reset_prog_mode(); // Restore curses terminal state
       refresh();         // Redraw the screen

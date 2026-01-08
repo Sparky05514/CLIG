@@ -20,6 +20,16 @@ A classic sliding tile puzzle game:
 -   **Controls**: WASD / Arrow Keys.
 -   **Features**: Score tracking, tile merging, 2048 win condition.
 
+### 4. Mania (`/mania`)
+A 4-key rhythm game (osu!mania style):
+-   **Controls**: D, F, J, K.
+-   **Features**: Synchronized audio with VLC, editable levels, combo/scoring system.
+
+### 5. Type (`/type`)
+A fast-paced typing game:
+-   **Controls**: Keyboard letters.
+-   **Features**: Words move right-to-left. Typing characters makes words disappear from right-to-left.
+
 ## Build & Run
 
 Each project has its own Makefile.
