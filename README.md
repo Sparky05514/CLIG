@@ -15,6 +15,11 @@ A classic Snake implementation with:
 -   **Controls**: WASD / Arrow Keys.
 -   **Features**: Smooth input queueing, score tracking.
 
+### 3. 2048 (`/2048`)
+A classic sliding tile puzzle game:
+-   **Controls**: WASD / Arrow Keys.
+-   **Features**: Score tracking, tile merging, 2048 win condition.
+
 ## Build & Run
 
 Each project has its own Makefile.
