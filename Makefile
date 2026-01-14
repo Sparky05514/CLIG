@@ -1,4 +1,4 @@
-SUBDIRS = snake tetris 2048 mania type
+SUBDIRS = snake tetris 2048 type
 
 all: $(SUBDIRS) launcher
 
