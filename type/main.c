@@ -6,9 +6,9 @@
 #include <unistd.h>
 
 #define MAX_WORDS 10
-#define SPAWN_RATE 2000   // ms
-#define INITIAL_SPEED 200 // Slower: ms per move
-#define GRID_WIDTH 40
+#define SPAWN_RATE 1000   // ms
+#define INITIAL_SPEED 100 // Slower: ms per move
+#define GRID_WIDTH 80
 
 typedef struct {
   char text[32];
@@ -118,20 +118,31 @@ int main() {
       break;
 
     if (ch != ERR) {
+      int target_idx = -1;
+      int max_y = -1;
+
+      // Find the bottom-most active word (highest y)
       for (int i = 0; i < MAX_WORDS; i++) {
         if (words[i].active) {
-          int original_len = strlen(words[i].text);
-          int typed_idx = original_len - words[i].current_len;
+          if (words[i].y > max_y) {
+            max_y = words[i].y;
+            target_idx = i;
+          }
+        }
+      }
 
-          if (ch == words[i].text[typed_idx]) {
-            words[i].current_len--;
-            if (words[i].current_len <= 0) {
-              words[i].active = 0;
-              score += original_len * 10;
-              if (move_speed > 50)
-                move_speed--;
-            }
-            break;
+      if (target_idx != -1) {
+        int i = target_idx;
+        int original_len = strlen(words[i].text);
+        int typed_idx = original_len - words[i].current_len;
+
+        if (ch == words[i].text[typed_idx]) {
+          words[i].current_len--;
+          if (words[i].current_len <= 0) {
+            words[i].active = 0;
+            score += original_len * 10;
+            if (move_speed > 50)
+              move_speed--;
           }
         }
       }
