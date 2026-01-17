@@ -1,11 +1,17 @@
 #define _DEFAULT_SOURCE
+#ifdef _WIN32
+#include <curses.h>
+#include <windows.h>
+#else
 #include <dirent.h>
 #include <ncurses.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
-#include <unistd.h>
 
 #define MAX_GAMES 20
 #define MAX_NAME_LEN 50
@@ -19,6 +25,37 @@ Game games[MAX_GAMES];
 int game_count = 0;
 
 void find_games() {
+#ifdef _WIN32
+  WIN32_FIND_DATA fd;
+  HANDLE hFind = FindFirstFile("./*", &fd);
+
+  if (hFind != INVALID_HANDLE_VALUE) {
+    do {
+      if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+        if (strcmp(fd.cFileName, ".") != 0 && strcmp(fd.cFileName, "..") != 0 &&
+            fd.cFileName[0] != '.') {
+          // On Windows, checking for .exe presence inside might be good, but
+          // for now assuming folder structure matches We'll check if a matching
+          // .exe exists: foldername/foldername.exe
+          char executable_path[256];
+          snprintf(executable_path, sizeof(executable_path), ".\\%s\\%s.exe",
+                   fd.cFileName, fd.cFileName);
+
+          if (GetFileAttributes(executable_path) != INVALID_FILE_ATTRIBUTES) {
+            if (game_count < MAX_GAMES) {
+              strncpy(games[game_count].name, fd.cFileName, MAX_NAME_LEN - 1);
+              games[game_count].name[MAX_NAME_LEN - 1] = '\0';
+              strncpy(games[game_count].path, executable_path, 255);
+              games[game_count].path[255] = '\0';
+              game_count++;
+            }
+          }
+        }
+      }
+    } while (FindNextFile(hFind, &fd));
+    FindClose(hFind);
+  }
+#else
   DIR *d;
   struct dirent *dir;
   struct stat st;
@@ -47,6 +84,7 @@ void find_games() {
     }
     closedir(d);
   }
+#endif
 }
 
 void draw_menu(int highlight) {
@@ -143,8 +181,13 @@ int main() {
       endwin();        // Temporarily leave curses mode
 
       char cmd[512];
+#ifdef _WIN32
+      snprintf(cmd, sizeof(cmd), "cd %s && %s.exe", games[choice].name,
+               games[choice].name);
+#else
       snprintf(cmd, sizeof(cmd), "cd %s && ./%s", games[choice].name,
                games[choice].name);
+#endif
       system(cmd);
 
       reset_prog_mode(); // Restore curses terminal state

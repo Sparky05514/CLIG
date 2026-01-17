@@ -1,9 +1,15 @@
 #define _DEFAULT_SOURCE
+#ifdef _WIN32
+#include <curses.h>
+#include <windows.h>
+#else
 #include <ncurses.h>
+#include <unistd.h>
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <unistd.h>
 
 #define MAX_WORDS 10
 #define SPAWN_RATE 2000   // ms
@@ -68,6 +74,26 @@ void spawn_word(int term_w, int term_h) {
   }
 }
 
+// Cross-platform sleep (ms)
+void sleep_ms(int ms) {
+#ifdef _WIN32
+  Sleep(ms);
+#else
+  usleep(ms * 1000);
+#endif
+}
+
+// Cross-platform monotonic time (ms)
+long get_time_ms() {
+#ifdef _WIN32
+  return (long)GetTickCount64();
+#else
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+#endif
+}
+
 int main() {
   initscr();
   noecho();
@@ -93,9 +119,7 @@ int main() {
 
   while (!game_over) {
     getmaxyx(stdscr, term_h, term_w);
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    long now = ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+    long now = get_time_ms();
 
     if (now - last_spawn > SPAWN_RATE) {
       spawn_word(term_w, term_h);
@@ -177,7 +201,7 @@ int main() {
     }
 
     refresh();
-    usleep(10000);
+    sleep_ms(10);
   }
 
   if (game_over) {
