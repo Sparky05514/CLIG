@@ -12,8 +12,8 @@
 #include <time.h>
 
 #define MAX_WORDS 10
-#define SPAWN_RATE 2000   // ms
-#define INITIAL_SPEED 300 // Slower: ms per move
+#define SPAWN_RATE 1000   // ms
+#define INITIAL_SPEED 100 // Slower: ms per move
 #define GRID_WIDTH 80
 
 typedef struct {
