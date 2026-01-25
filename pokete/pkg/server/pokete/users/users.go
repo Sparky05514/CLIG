@@ -16,17 +16,17 @@ var (
 
 type Users struct {
 	users     *map[uint64]user.User
+	nameMap   *map[string]uint64
 	positions *positions.Positions
 }
 
 func (u Users) Add(conId uint64, newUser user.User) error {
-	for _, us := range *u.users {
-		if us.Name == newUser.Name {
-			return USER_PRESENT
-		}
+	if _, ok := (*u.nameMap)[newUser.Name]; ok {
+		return USER_PRESENT
 	}
 
 	(*u.users)[conId] = newUser
+	(*u.nameMap)[newUser.Name] = conId
 	err := u.positions.BroadcastChange(conId, newUser)
 
 	return err
@@ -36,6 +36,7 @@ func (u Users) Remove(conId uint64) {
 	us, ok := (*u.users)[conId]
 	if ok {
 		_ = u.positions.BroadcastRemoval(conId, us.Name)
+		delete(*u.nameMap, us.Name)
 	}
 	u.positions.UnSubscribe(conId)
 	delete(*u.users, conId)
@@ -49,12 +50,15 @@ func (u Users) GetAllUsers() (retUsers []user.User) {
 }
 
 func (u Users) GetUserByName(name string) (*user.User, error) {
-	for _, us := range *u.users {
-		if us.Name == name {
-			return &us, nil
-		}
+	conId, ok := (*u.nameMap)[name]
+	if !ok {
+		return nil, USER_DOESNT_EXIST
 	}
-	return nil, USER_DOESNT_EXIST
+	us, ok := (*u.users)[conId]
+	if !ok {
+		return nil, USER_DOESNT_EXIST
+	}
+	return &us, nil
 }
 
 func (u Users) GetUserByConId(conId uint64) (*user.User, error) {
@@ -87,8 +91,10 @@ func (u Users) SetNewPositionToUser(conId uint64, newPosition user.Position) err
 
 func NewUsers(positions2 *positions.Positions) *Users {
 	var tempUsers = make(map[uint64]user.User)
+	var tempNameMap = make(map[string]uint64)
 	return &Users{
 		users:     &tempUsers,
+		nameMap:   &tempNameMap,
 		positions: positions2,
 	}
 }
