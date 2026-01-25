@@ -79,62 +79,62 @@ You can find different versions of this wiki:
         -------
         A Table of contents for a single page wiki.
         """
-        out = ''
+        out = []
 
         # Table of contents
         if not multi_page:
-            out += """## Table of contents
+            out.append("""## Table of contents
 1. [Poketes](#poketes)
-"""
+""")
             for i, typ in enumerate(sorted(types)):
-                out += f"""   {i + 1}. [{typ.capitalize()} Poketes](#{typ}-poketes)\n"""
+                out.append(f"""   {i + 1}. [{typ.capitalize()} Poketes](#{typ}-poketes)\n""")
                 for j, poke in enumerate([k for k in sorted(list(pokes)[1:]) if
                                           pokes[k]["types"][0] == typ]):
-                    out += f"""       {j + 1}. [{Wiki.get_name(poke)}](#{poke.replace("_", "-")})\n"""
-            out += "2. [Attacks](#attacks)\n"
+                    out.append(f"""       {j + 1}. [{Wiki.get_name(poke)}](#{poke.replace("_", "-")})\n""")
+            out.append("2. [Attacks](#attacks)\n")
             for i, typ in enumerate(sorted(types)):
-                out += f"""   {i + 1}. [{typ.capitalize()} attacks](#{typ}-attacks)\n"""
+                out.append(f"""   {i + 1}. [{typ.capitalize()} attacks](#{typ}-attacks)\n""")
                 for j, atc in enumerate([k for k in sorted(attacks) if
                                          attacks[k]["types"][0] == typ]):
-                    out += f"""       {j + 1}. [{attacks[atc]["name"]}](#{attacks[atc]["name"]
-                    .replace(" ", "-").lower()})\n"""
-            out += """3. [Types](#types)
+                    out.append(f"""       {j + 1}. [{attacks[atc]["name"]}](#{attacks[atc]["name"]
+                    .replace(" ", "-").lower()})\n""")
+            out.append("""3. [Types](#types)
 4. [Items](#items)
-"""
+""")
             for j, item in enumerate(sorted(items)):
-                out += f"""   {j + 1}. [{items[item]["pretty_name"]}](#{item.replace("_", "-")})\n"""
-            out += """5. [Effects](#effects)
-"""
+                out.append(f"""   {j + 1}. [{items[item]["pretty_name"]}](#{item.replace("_", "-")})\n""")
+            out.append("""5. [Effects](#effects)
+""")
             for j, effect in enumerate(effect_list):
-                out += f"""   {j + 1}. [{effect.c_name.capitalize()}](#{effect.c_name.replace("_", "-")})
-"""
+                out.append(f"""   {j + 1}. [{effect.c_name.capitalize()}](#{effect.c_name.replace("_", "-")})
+""")
 
         else:
-            out += """## Table of contents
+            out.append("""## Table of contents
 1. [Poketes](./poketes)
-"""
+""")
             for i, typ in enumerate(sorted(types)):
-                out += f"""   {i + 1}. [{typ.capitalize()} Poketes](./poketes/{typ})\n"""
+                out.append(f"""   {i + 1}. [{typ.capitalize()} Poketes](./poketes/{typ})\n""")
                 for j, poke in enumerate([k for k in sorted(list(pokes)[1:]) if
                                           pokes[k]["types"][0] == typ]):
-                    out += f"""       {j + 1}. [{Wiki.get_name(poke)}](./poketes/{typ}#{poke.replace("_", "-")})\n"""
-            out += "2. [Attacks](./attacks)\n"
+                    out.append(f"""       {j + 1}. [{Wiki.get_name(poke)}](./poketes/{typ}#{poke.replace("_", "-")})\n""")
+            out.append("2. [Attacks](./attacks)\n")
             for i, typ in enumerate(sorted(types)):
-                out += f"""   {i + 1}. [{typ.capitalize()} attacks](./attacks/{typ})\n"""
+                out.append(f"""   {i + 1}. [{typ.capitalize()} attacks](./attacks/{typ})\n""")
                 for j, atc in enumerate([k for k in sorted(attacks) if
                                          attacks[k]["types"][0] == typ]):
-                    out += f"""       {j + 1}. [{attacks[atc]["name"]}](./attack/{typ}#{atc.replace("_", "-")})\n"""
-            out += """3. [Types](./types)
+                    out.append(f"""       {j + 1}. [{attacks[atc]["name"]}](./attack/{typ}#{atc.replace("_", "-")})\n""")
+            out.append("""3. [Types](./types)
 4. [Items](./items)
-"""
+""")
             for j, item in enumerate(sorted(items)):
-                out += f"""   {j + 1}. [{items[item]["pretty_name"]}](./items#{item.replace("_", "-")})\n"""
-            out += """5. [Effects](./effects)
-"""
+                out.append(f"""   {j + 1}. [{items[item]["pretty_name"]}](./items#{item.replace("_", "-")})\n""")
+            out.append("""5. [Effects](./effects)
+""")
             for j, effect in enumerate(effect_list):
-                out += f"""   {j + 1}. [{effect.c_name.capitalize()}](./effects#{effect.c_name.replace("_", "-")})
-"""
-        return out
+                out.append(f"""   {j + 1}. [{effect.c_name.capitalize()}](./effects#{effect.c_name.replace("_", "-")})
+""")
+        return "".join(out)
 
     @staticmethod
     def poketes(page_mode='single', pokete_type=None) -> str:
