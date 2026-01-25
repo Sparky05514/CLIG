@@ -80,28 +80,32 @@ You can find different versions of this wiki:
         A Table of contents for a single page wiki.
         """
         out = ''
+        sorted_types = sorted(types)
+        sorted_pokes = sorted(list(pokes)[1:])
+        sorted_attacks = sorted(attacks)
+        sorted_items = sorted(items)
 
         # Table of contents
         if not multi_page:
             out += """## Table of contents
 1. [Poketes](#poketes)
 """
-            for i, typ in enumerate(sorted(types)):
+            for i, typ in enumerate(sorted_types):
                 out += f"""   {i + 1}. [{typ.capitalize()} Poketes](#{typ}-poketes)\n"""
-                for j, poke in enumerate([k for k in sorted(list(pokes)[1:]) if
+                for j, poke in enumerate([k for k in sorted_pokes if
                                           pokes[k]["types"][0] == typ]):
                     out += f"""       {j + 1}. [{Wiki.get_name(poke)}](#{poke.replace("_", "-")})\n"""
             out += "2. [Attacks](#attacks)\n"
-            for i, typ in enumerate(sorted(types)):
+            for i, typ in enumerate(sorted_types):
                 out += f"""   {i + 1}. [{typ.capitalize()} attacks](#{typ}-attacks)\n"""
-                for j, atc in enumerate([k for k in sorted(attacks) if
+                for j, atc in enumerate([k for k in sorted_attacks if
                                          attacks[k]["types"][0] == typ]):
                     out += f"""       {j + 1}. [{attacks[atc]["name"]}](#{attacks[atc]["name"]
                     .replace(" ", "-").lower()})\n"""
             out += """3. [Types](#types)
 4. [Items](#items)
 """
-            for j, item in enumerate(sorted(items)):
+            for j, item in enumerate(sorted_items):
                 out += f"""   {j + 1}. [{items[item]["pretty_name"]}](#{item.replace("_", "-")})\n"""
             out += """5. [Effects](#effects)
 """
@@ -113,21 +117,21 @@ You can find different versions of this wiki:
             out += """## Table of contents
 1. [Poketes](./poketes)
 """
-            for i, typ in enumerate(sorted(types)):
+            for i, typ in enumerate(sorted_types):
                 out += f"""   {i + 1}. [{typ.capitalize()} Poketes](./poketes/{typ})\n"""
-                for j, poke in enumerate([k for k in sorted(list(pokes)[1:]) if
+                for j, poke in enumerate([k for k in sorted_pokes if
                                           pokes[k]["types"][0] == typ]):
                     out += f"""       {j + 1}. [{Wiki.get_name(poke)}](./poketes/{typ}#{poke.replace("_", "-")})\n"""
             out += "2. [Attacks](./attacks)\n"
-            for i, typ in enumerate(sorted(types)):
+            for i, typ in enumerate(sorted_types):
                 out += f"""   {i + 1}. [{typ.capitalize()} attacks](./attacks/{typ})\n"""
-                for j, atc in enumerate([k for k in sorted(attacks) if
+                for j, atc in enumerate([k for k in sorted_attacks if
                                          attacks[k]["types"][0] == typ]):
                     out += f"""       {j + 1}. [{attacks[atc]["name"]}](./attack/{typ}#{atc.replace("_", "-")})\n"""
             out += """3. [Types](./types)
 4. [Items](./items)
 """
-            for j, item in enumerate(sorted(items)):
+            for j, item in enumerate(sorted_items):
                 out += f"""   {j + 1}. [{items[item]["pretty_name"]}](./items#{item.replace("_", "-")})\n"""
             out += """5. [Effects](./effects)
 """
@@ -154,15 +158,17 @@ You can find different versions of this wiki:
         -------
         All poketes and their attributes as a markdown string.
         """
+        sorted_types = sorted(types)
+        sorted_pokes = sorted(list(pokes)[1:])
         if page_mode == 'single':
             out = """
 ## Poketes
 In the following all Poketes with their attributes are displayed.
 
 """
-            for typ in sorted(types):
+            for typ in sorted_types:
                 out += f"### {typ.capitalize()} Poketes"
-                for poke in [k for k in sorted(list(pokes)[1:]) if
+                for poke in [k for k in sorted_pokes if
                              pokes[k]["types"][0] == typ]:
                     if VERBOSE:
                         print(f' -> Adding {pokes[poke]["name"]}')
@@ -173,21 +179,21 @@ In the following all Poketes with their attributes are displayed.
 In the following all Poketes with their attributes are displayed.
 
 """
-            for typ in sorted(types):
+            for typ in sorted_types:
                 out += f"- [{typ.capitalize()} Poketes](./{typ})\n"
             out += "\n---\n\n## All poketes sorted by their type:\n"
-            for typ in sorted(types):
+            for typ in sorted_types:
                 out += f"- [{typ.capitalize()} Poketes](./{typ})\n"
-                for poke in [k for k in sorted(list(pokes)[1:]) if
+                for poke in [k for k in sorted_pokes if
                              pokes[k]["types"][0] == typ]:
                     out += f"""  - [{pokes[poke]["name"].capitalize()}](./{typ}#{poke})\n"""
             return out
         elif page_mode == 'multi':
             if pokete_type is not None:
                 out = f"# {pokete_type.capitalize()} Poketes"
-                for poke in [k for k in sorted(list(pokes)[1:]) if
+                for poke in [k for k in sorted_pokes if
                              pokes[k]["types"][0] == pokete_type]:
-                    if poke == sorted(list(pokes)[1:])[-1]:
+                    if poke == sorted_pokes[-1]:
                         if VERBOSE:
                             print(f'  `-> Adding {pokes[poke]["name"]}')
                     else:
@@ -283,12 +289,13 @@ In the following all Poketes with their attributes are displayed.
         -------
         A markdown string of all attacks with their attributes and informations.
         """
+        sorted_types = sorted(types)
         if multi_page:
             index = """# Attacks
 Those are all attacks present in the game.
 """
             pages = []
-            for typ in sorted(types):
+            for typ in sorted_types:
                 if VERBOSE:
                     print(f" -> Adding {typ}")
                 index += f"\n- [{typ.capitalize()}](./{typ})"
@@ -309,7 +316,7 @@ Those are all attacks present in the game.
                     page += Wiki.attack_info(atc, True)
                 pages.append((f"{typ}.md", page))
             index += "\n\n---\n\n## All attacks sorted by their type:\n"
-            for typ in sorted(types):
+            for typ in sorted_types:
                 index += f"- [{typ.capitalize()} Attacks](./{typ})\n"
                 for atc in [k for k in attacks if
                             attacks[k]["types"][0] == typ]:
@@ -322,7 +329,7 @@ Those are all attacks present in the game.
 ## Attacks
 Those are all attacks present in the game.
 """
-        for typ in sorted(types):
+        for typ in sorted_types:
             out += f"\n### {typ.capitalize()} attacks"
             for atc in [k for k in attacks if
                         attacks[k]["types"][0] == typ]:
