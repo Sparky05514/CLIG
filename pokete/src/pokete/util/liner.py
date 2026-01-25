@@ -7,18 +7,23 @@ def liner(text, width, pre=""):
     RETURNS:
         The lined string"""
     lens = 0
-    out = ""
+    out = []
     for name in text.split(" "):
         if "\n" in name:
             lens = len(pre)
-            out += name + pre
+            out.append(name)
+            out.append(pre)
         elif lens + len(name) + 1 <= width:
-            out += name + " "
+            out.append(name)
+            out.append(" ")
             lens += len(name) + 1
         else:
             lens = len(name) + 1 + len(pre)
-            out += "\n" + pre + name + " "
-    return out
+            out.append("\n")
+            out.append(pre)
+            out.append(name)
+            out.append(" ")
+    return "".join(out)
 
 
 def hard_liner(l_len, name):
