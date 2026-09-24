@@ -1,3 +1,0 @@
-{{ range . }}
-from .{{ .Path }} import ({{ range .Types }}{{.}}, {{.}}Dict, {{ end }})
-{{- end -}}

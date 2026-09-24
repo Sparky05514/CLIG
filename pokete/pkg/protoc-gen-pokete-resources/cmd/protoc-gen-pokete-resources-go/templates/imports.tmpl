@@ -1,5 +1,0 @@
-import ({{ range . }}
-    {{- if (not .IsSameMod) -}}
-    "{{ .GoImportPath }}";
-    {{- end -}}
-{{- end }})
